@@ -6,3 +6,4 @@ lib/Net/ENUM.pm
 lib/Net/ENUM.pod
 t/01_loadmodule.t
 t/02_testmethods.t
+META.yml                                 Module meta-data (added by MakeMaker)
