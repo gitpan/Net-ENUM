@@ -1,0 +1,8 @@
+MANIFEST
+Changes
+INSTALL
+Makefile.PL
+lib/Net/ENUM.pm
+lib/Net/ENUM.pod
+t/01_loadmodule.t
+t/02_testmethods.t
