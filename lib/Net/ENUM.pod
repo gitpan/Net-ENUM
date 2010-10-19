@@ -10,14 +10,16 @@ Net::ENUM - E.164 NUmber Mapping
   use Net::ENUM;
 
   my $net_enum = Net::ENUM->new(
-    udp_timeout => 5,
+    { udp_timeout => 5, ... }
   );
 
   # returns contact of first NAPTR entry (after sorting by 'order') the RegEx
   # is already done!
   my $contact_1 = $net_enum->get_enum_address( '+123 456-789' );
+  # or with vanity
+  my $contact_1 = $net_enum->get_enum_address( '+1 ad ilm-puz' );
 
-  # the same as above, but takes the first 'sip' entry
+  # the same as above, but get the first 'sip' entry
   my $contact_2 = $net_enum->get_enum_address( '+123 456-789', 'order', 'sip' );
 
   # returns an array with all NAPTR entries (each a hash) sorted by 'name'
@@ -39,18 +41,25 @@ Net::ENUM - E.164 NUmber Mapping
 
 This module is used to get the wanted NAPTR or Internet address of a given ENUM.
 
+It can also be used to get nameservers (NS) of a domain, transform a phone
+number into a e164.arpa-domain and to translate a vanity into a phone number.
+
 
 
 =head1 CONSTRUCTOR
 
 =over 4
 
-=item new ( %ARGS )
+=item new ( [ ARG, VANITY ] )
 
-This creates a new ENUM object.
+This creates a new Net::ENUM object.
 
-%ARGS are the same as of L<Net::DNS::Resolver>->new(%args). %ARGS can overwrite
-Net::ENUM default values!
+ARG is a hashref. Its keys and values are the same as %args of
+L<Net::DNS::Resolver>->new(%args). ARG can overwrite Net::ENUM default values!
+
+VANITY is a hashref. The keys are the letters and their values are the
+corresponding numbers. Example (default): { 'abc' => 2, 'def' => 3, ...,
+'wxyz' => 9 }. If the hashref is empty no vanity translation will be done.
 
 =back
 
@@ -62,7 +71,7 @@ Net::ENUM default values!
 
 =item get_enum_address ( NUMBER, SORTBY, MEDIA )
 
-NUMBER is a qualified international phone number starting with '+'.
+NUMBER is a qualified international phone number (can have vanity) starting with '+'.
 
 SORTBY sorts NAPTR based on this attribute, defaults to 'order' (= lowest to
 highest order, for same order lowest preference first).
@@ -71,14 +80,27 @@ MEDIA is the NAPTR media to return ('sip', 'tel', 'email', ...), defaults to
 return all types.
 
 Return:
-  - If an array is wanted it returns an array with all sorted NAPTR entries,
-    each one in a hash. Keys in the hash are:
-      flags, ttl ,name, service, rdata, preference, rdlength, regexp, order,
-      type, class, replacement
-  - If a string is wanted it returns a string with the Internet protocol address
-    of the first NAPTR entry (after sorting and selecting media). The RegEx is
-    already done on the NUMBER!
-  - <undef> on error. The error message is stored in $self->{'enum_error'}.
+
+=over 4
+
+=item -
+
+If an array is wanted it returns an array with all sorted NAPTR entries, each
+one in a hash. Keys in the hash are:
+flags, ttl ,name, service, rdata, preference, rdlength, regexp, order, type,
+class, replacement
+
+=item -
+
+If a string is wanted it returns a string with the Internet protocol address of
+the first NAPTR entry (after sorting and selecting media). The RegEx is already
+done on the NUMBER!
+
+=item -
+
+<undef> on error. The error message is stored in $self->{'enum_error'}.
+
+=back
 
 
 
@@ -88,19 +110,51 @@ DOMAIN must be a full qualified domain. In our case it should look like:
 9.8.7.6.5.4.3.2.1.e164.arpa
 
 Return:
-  - an arrayref with nameservers found for this domain.
-  - <undef> on error. The error message is stored in $self->{'enum_error'}.
+
+=over 4
+
+=item -
+
+An arrayref with nameservers found for this domain.
+
+=item -
+
+<undef> on error. The error message is stored in $self->{'enum_error'}.
+
+=back
 
 
 
 =item number_to_domain ( NUMBER )
 
-NUMBER can be a phone number in format: +123 456-789 or a e164.arpa domain.
+NUMBER can be a phone number in format: +123 456-789, +1ad ilm-puz or a
+e164.arpa domain.
 
 Return:
-  - the e164.arpa domain of NUMBER. In our example:
-    9.8.7.6.5.4.3.2.1.e164.arpa
-  - <undef> on error. The error message is stored in $self->{'enum_error'}.
+
+=over 4
+
+=item -
+
+The e164.arpa domain of NUMBER. In our example:
+9.8.7.6.5.4.3.2.1.e164.arpa
+
+=item -
+
+<undef> on error. The error message is stored in $self->{'enum_error'}.
+
+=back
+
+
+
+=item translate_vanity ( NUMBER )
+
+NUMBER is a phone number with or without vanity. Examples: +123 456-789,
++1ad ilm-puz. All letters from /a-z/i (default) will be translated into
+numbers. Modifying the hashref $self->{'vanity'} modifies the translation (see
+L</CONSTRUCTOR>).
+
+Return: Nothing. NUMBER is translated in place.
 
 =back
 

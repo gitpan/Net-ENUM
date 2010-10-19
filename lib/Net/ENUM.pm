@@ -1,5 +1,5 @@
 #
-# ENUM (E.164 NUmber Mapping)
+# Net::ENUM - E.164 NUmber Mapping
 #
 # This module is Copyright (C) 2010, Detlef Pilzecker.
 # All Rights Reserved.
@@ -12,7 +12,7 @@ package Net::ENUM;
 use strict;
 use Net::DNS qw( rrsort );
 
-$Net::ENUM::VERSION = '0.1';
+$Net::ENUM::VERSION = '0.2';
 
 
 ################################################################################
@@ -23,11 +23,24 @@ $Net::ENUM::VERSION = '0.1';
 # Return: $self
 ################################################################################
 sub new {
-	my ( $class, %args ) = @_;
+	my ( $class, $args, $vanity ) = @_;
+
+	die '$args must be HASHREF' if $args && ref( $args ) ne 'HASH';
+
+	if ( $vanity ) {
+		die '$vanity must be HASHREF' if ref( $vanity ) ne 'HASH';
+	}
+	else {
+		$vanity = {
+			'abc'  => 2, 'def'  => 3, 'ghi'  => 4, 'jkl'  => 5,
+			'mno'  => 6, 'pqrs' => 7, 'tuv'  => 8, 'wxyz' => 9,
+		};
+	}
 
 	my $self = {
 		'enum_error' => '',
-		'res_args'   => \%args,
+		'res_args' => $args,
+		'vanity' => $vanity,
 	};
 
 	bless( $self, $class );
@@ -134,6 +147,8 @@ sub number_to_domain {
 		return;
 	}
 
+	$self->translate_vanity( $number );
+
 	$number =~ s/[^\d]//g;
 
 	unless ( $number ) {
@@ -143,6 +158,20 @@ sub number_to_domain {
 
 	$self->{'enum_error'} = '';
 	return reverse( join( '.', split( //, $number ) ) ) . '.e164.arpa';
+}
+
+
+################################################################################
+# Args: ( $self, $number )
+#  $number: Phone number, can contain letters (vanity) they will be translatent
+#           into numbers here
+# Return:
+#  nothing, translates the number in place
+################################################################################
+sub translate_vanity {
+	my Net::ENUM $self = $_[0];
+
+	map { $_[1] =~ s/[$_]/$self->{'vanity'}{ $_ }/gi } keys %{ $self->{'vanity'} };
 }
 
 1;
