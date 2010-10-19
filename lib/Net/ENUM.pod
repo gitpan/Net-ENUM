@@ -50,16 +50,17 @@ number into a e164.arpa-domain and to translate a vanity into a phone number.
 
 =over 4
 
-=item new ( [ ARG, VANITY ] )
+=item new ( [ ARGS, VANITY ] )
 
 This creates a new Net::ENUM object.
 
-ARG is a hashref. Its keys and values are the same as %args of
-L<Net::DNS::Resolver>->new(%args). ARG can overwrite Net::ENUM default values!
+ARGS is a hashref. Its keys and values are the same as %args of
+L<Net::DNS::Resolver>->new(%args). ARGS can overwrite Net::ENUM default values!
 
 VANITY is a hashref. The keys are the letters and their values are the
 corresponding numbers. Example (default): { 'abc' => 2, 'def' => 3, ...,
-'wxyz' => 9 }. If the hashref is empty no vanity translation will be done.
+'wxyz' => 9 }. If the hashref is empty no vanity translation will be done. If
+VANITY is undefined the default/standard vanity will be used.
 
 =back
 
@@ -69,7 +70,7 @@ corresponding numbers. Example (default): { 'abc' => 2, 'def' => 3, ...,
 
 =over 4
 
-=item get_enum_address ( NUMBER, SORTBY, MEDIA )
+=item get_enum_address ( NUMBER [ , SORTBY, MEDIA ] )
 
 NUMBER is a qualified international phone number (can have vanity) starting with '+'.
 
@@ -83,22 +84,23 @@ Return:
 
 =over 4
 
-=item -
+=item *
 
 If an array is wanted it returns an array with all sorted NAPTR entries, each
 one in a hash. Keys in the hash are:
 flags, ttl ,name, service, rdata, preference, rdlength, regexp, order, type,
 class, replacement
 
-=item -
+=item *
 
 If a string is wanted it returns a string with the Internet protocol address of
-the first NAPTR entry (after sorting and selecting media). The RegEx is already
-done on the NUMBER!
+the first NAPTR entry (after sorting and selecting media). The RegEx was applied
+on the NUMBER.
 
-=item -
+=item *
 
-<undef> on error. The error message is stored in $self->{'enum_error'}.
+<undef> on error/if no entry was found. The error message is stored
+in $self->{'enum_error'}.
 
 =back
 
@@ -113,13 +115,14 @@ Return:
 
 =over 4
 
-=item -
+=item *
 
 An arrayref with nameservers found for this domain.
 
-=item -
+=item *
 
-<undef> on error. The error message is stored in $self->{'enum_error'}.
+<undef> if no nameserver was found. The returned error message is stored
+in $self->{'enum_error'}.
 
 =back
 
@@ -134,12 +137,12 @@ Return:
 
 =over 4
 
-=item -
+=item *
 
 The e164.arpa domain of NUMBER. In our example:
 9.8.7.6.5.4.3.2.1.e164.arpa
 
-=item -
+=item *
 
 <undef> on error. The error message is stored in $self->{'enum_error'}.
 
@@ -151,10 +154,20 @@ The e164.arpa domain of NUMBER. In our example:
 
 NUMBER is a phone number with or without vanity. Examples: +123 456-789,
 +1ad ilm-puz. All letters from /a-z/i (default) will be translated into
-numbers. Modifying the hashref $self->{'vanity'} modifies the translation (see
-L</CONSTRUCTOR>).
+their corresponding numbers. Modifying the hashref $self->{'vanity'} modifies
+the translation (see also L</CONSTRUCTOR>).
 
-Return: Nothing. NUMBER is translated in place.
+Return:
+
+=over 4
+
+=item *
+
+The NUMBER is translated in place, so you really don't need a return value. In
+case NUMBER was a string and not a scalar this function also returns the
+translated NUMBER.
+
+=back
 
 =back
 

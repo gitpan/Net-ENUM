@@ -12,7 +12,7 @@ package Net::ENUM;
 use strict;
 use Net::DNS qw( rrsort );
 
-$Net::ENUM::VERSION = '0.2';
+$Net::ENUM::VERSION = '0.3';
 
 
 ################################################################################
@@ -166,12 +166,14 @@ sub number_to_domain {
 #  $number: Phone number, can contain letters (vanity) they will be translatent
 #           into numbers here
 # Return:
-#  nothing, translates the number in place
+#  translates the $number in place, but you can also use the returned 
 ################################################################################
 sub translate_vanity {
 	my Net::ENUM $self = $_[0];
 
 	map { $_[1] =~ s/[$_]/$self->{'vanity'}{ $_ }/gi } keys %{ $self->{'vanity'} };
+
+	return $_[1];
 }
 
 1;

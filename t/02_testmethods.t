@@ -35,7 +35,7 @@ ok( $domain eq '0.5.3.2.7.2.9.6.9.4.e164.arpa', "turn number '$phone' into domai
 diag( $domain );
 # generate domain 2
 $domain = $NetENUM->number_to_domain( '+49 nz asbdk-0' );
-ok( $domain eq '0.5.3.2.7.2.9.6.9.4.e164.arpa', "turn number '+49 nz asbdk-0' into domain:" ) || diag( $NetENUM->{'enum_error'} );
+ok( $domain eq '0.5.3.2.7.2.9.6.9.4.e164.arpa', "turn vanity '+49 nz asbdk-0' into domain:" ) || diag( $NetENUM->{'enum_error'} );
 diag( $domain );
 
 
